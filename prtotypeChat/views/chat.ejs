@@ -1,0 +1,146 @@
+<%- include("./include/_header") %>
+  <!-- Main -->
+
+<main id="site-chat">
+  <h3 class="chat-label">NodeJS Chatting</h3>
+    <div>현재 로그인 사용자 : <%= username %></div>
+
+<!--    전체 채팅 공간 -->
+    <div class="chat-all-container">
+        <h4 class="chat-all-label">All Chat</h4>
+        <div id="chat-messages">
+        <!-- 메세지가 표시될 구역 -->
+            <div id="chat-log" class="chat-log"></div>
+        </div>
+    </div>
+
+<!--    귓속말 구역 -->
+<!--    귓속말 시작은 @유저명 으로 시작 -->
+    <div class="chat-whisper-container">
+        <h4 class="chat-whisper-label">Whisper</h4>
+        <div id="whisper-messages">
+        <!-- 메세지가 표시될 구역 -->
+            <div id="whisper-log" class="whisper-log"></div>
+        </div>
+    </div>
+
+    <div class="chat-load-container">
+        <form id="chat-load" method="get" action="/chat/log">
+            <h4 class="chat-load-label">Load Chat</h4>
+            <button type="submit" id="load-btn">Load</button>
+        </form>
+        <div id="chat-load-messages">
+        <!-- 메세지가 표시될 구역 -->
+            <div id="chat-load-log" class="chat-load-log"></div>
+        </div>
+    </div>
+
+<!--    채팅 입력하는 구역-->
+    <div class="chat-input-container">
+        <form id="chat">
+                <input type="text" id="message-input" autocomplete="off" />
+                <button type="submit" id="send-btn">Send</button>
+        </form>
+    </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+<script>
+    const socket = io();
+    const chatList = document.getElementById('chat-log');
+    const whisperList = document.getElementById('whisper-log');
+    const chatLoadList = document.getElementById('chat-load-log');
+    const chatForm = document.getElementById('chat');
+    const chatLoadForm = document.getElementById('chat-load');
+    const messageInput = document.getElementById('message-input');
+    const loadBtn = document.getElementById('load-btn');
+    const username = "<%= username %>";
+
+    function appendMsg(text, className){
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = text;
+        chatList.appendChild(div);
+    }
+
+    function systemMsg(text, className){
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = text;
+        chatList.appendChild(div);
+    }
+
+    function whisperMsg(text, className){
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = text;
+        whisperList.appendChild(div);
+    }
+
+    function logMsg(text, className){
+        const div = document.createElement('div');
+        div.className = className;
+        div.textContent = text;
+        chatLoadList.appendChild(div);
+    }
+
+    socket.on('connect', function() {
+      socket.emit('newUser', username)
+    })
+
+    socket.on('system', ({message}) => {
+        systemMsg(message, 'systemMsg');
+    })
+
+    socket.on('message', ({name, msg, self}) => {
+        const label = `${name} : ${msg}`
+        appendMsg(label, self ? 'userMsg' :'otherMsg');
+    })
+
+    socket.on('whisper', ({name, pureMsg, self}) => {
+        if (self === true){
+            whisperMsg(pureMsg, 'userMsg');
+        }
+        else {
+            const label = `${name}님으로부터온 귓속말 : ${pureMsg}`
+            whisperMsg(label, 'otherMsg');
+        }
+    })
+
+    socket.on('getLog', ({name, msg}) => {
+        if (name === username){
+            logMsg(msg, 'userMsg');
+        }
+        else {
+            logMsg(msg, 'otherMsg');
+        }
+    })
+
+    // 입력된 메세지 전송하여 처리
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msg = messageInput.value;
+        if (msg.trim() !== ''){
+            if (msg.includes('@')){
+                const target = msg.split(' ')[0].substring(1);
+                const pureMsg = msg.split(' ').slice(1).join(' ');
+                socket.emit('whisper', {name:username, pureMsg:pureMsg, target:target});
+            }else{
+                socket.emit('send', {name:username, msg:msg});
+            }
+            messageInput.value = '';
+        }
+    });
+
+    chatLoadForm.addEventListener('submit', (e) => {
+       e.preventDefault();
+       const payload = {
+           limit : 50
+       }
+       socket.emit('get', payload);
+    });
+
+</script>
+
+  <!-- /Main -->
+<%- include("./include/_footer") %>

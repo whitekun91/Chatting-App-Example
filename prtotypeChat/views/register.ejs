@@ -1,0 +1,23 @@
+<%- include("./include/_header") %>
+
+  <!-- Main -->
+  <main id="site-main">
+
+    <h3>Register User</h3>
+
+    <form class="register" method="post" action="/register">
+      <label for="username"><b>ID</b></label>
+      <input type="text" placeholder="ID" name="username" id="username">
+
+      <label for="password"><b>Password</b></label>
+      <input type="password" placeholder="Password" name="password" id="password">
+
+      <label for="password2"><b>Password Check</b></label>
+      <input type="password" placeholder="Password Check" name="password2" id="password2">
+
+      <input type="submit" value="Register" class="register-btn">
+    </form>
+  </main>
+  <!-- /Main -->
+
+<%- include("./include/_footer") %>

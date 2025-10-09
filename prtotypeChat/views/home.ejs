@@ -1,0 +1,27 @@
+<%- include("./include/_header") %>
+
+  <!-- Main -->
+  <main id="site-main">
+
+    <div class="home-container">
+      <h3>NodeJS Chatting</h3>
+      <p>Need to Login.</p>
+
+      <form class="login" method="post" action="/">
+        <label for="username"><b>Username</b></label>
+        <input type="text" placeholder="User ID" name="username" id="username">
+
+        <label for="password"><b>Password</b></label>
+        <input type="password" placeholder="Password" name="password" id="password">
+
+        <div class="btn-container">
+            <input type="button" value="Register" class="register-btn" onclick="location.href='/register'">
+            <input type="submit" value="Login" class="login-btn" onclick="location.href='/chat'">
+        </div>
+
+      </form>
+    </div>
+  </main>
+  <!-- /Main -->
+
+<%- include("./include/_footer") %>
